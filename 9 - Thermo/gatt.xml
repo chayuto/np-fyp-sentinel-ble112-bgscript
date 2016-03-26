@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+
+    <service uuid="1800">
+      <description>Generic Access Profile</description>
+
+      <characteristic uuid="2a00">
+        <properties read="true" const="true" />
+        <value>Ptototype 2</value>
+      </characteristic>
+
+      <characteristic uuid="2a01">
+        <properties read="true" const="true" />
+        <value type="hex">4142</value>
+      </characteristic>
+    </service>
+
+    <service type="primary" uuid="9000" id="manufacturer">
+        <characteristic uuid="9100">
+            <properties read="true" const="true" />
+            <value type="hex">000780c0ffeef00d</value>
+        </characteristic>
+        <characteristic uuid="9101">
+            <properties read="true" const="true" />
+            <value>modelnumber</value>
+        </characteristic>
+        <characteristic uuid="9106">
+            <properties read="true" const="true" />
+            <value>Bluegiga</value>
+        </characteristic>
+    </service>
+
+    
+    
+    <service uuid="6d480f49-91d3-4a18-be29-0d27f4109c23">
+        <description>Data</description>
+        <characteristic uuid="11c3876c-9bda-42cc-a30b-1be83c8059d3" id="data_reg">
+            <properties read="true" notify="true"/>
+            <value type="hex">990000000000000000000099</value>
+        </characteristic>
+        
+    </service>
+	
+	
+	<service uuid="3feb0060-9b54-11e2-9e96-0800200c9a66">
+        <description>Control register</description>
+        <characteristic uuid="3feb0061-9b54-11e2-9e96-0800200c9a66" id="ctl_reg">
+            <properties read="true" write="true" />
+            <value type="hex">970097</value>
+        </characteristic>
+        
+    </service>
+	
+	<service uuid="f10017a0-9db6-11e2-9e96-0800200c9a66">
+        <description>Fall alert register</description>
+        <characteristic uuid="f10017a1-9db6-11e2-9e96-0800200c9a66" id="fall_alert">
+            <properties read="true" notify="true" />
+            <value type="hex">960096</value>
+        </characteristic>
+        
+    </service>
+</configuration>

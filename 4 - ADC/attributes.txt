@@ -1,0 +1,2 @@
+xgatt_battery 16
+acc_data 20

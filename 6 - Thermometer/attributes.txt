@@ -1,0 +1,4 @@
+acc_data 15
+temp_data 19
+ctl_reg 23
+fall_alert 26

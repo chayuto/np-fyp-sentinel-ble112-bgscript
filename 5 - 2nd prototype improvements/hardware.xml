@@ -1,0 +1,7 @@
+<hardware>
+  <sleeposc enable="true" ppm="30" />
+  <usb enable="false" endpoint="api" />
+  <txpower power="15" bias="5" />
+  <script enable="true" />
+  <port index="1" tristate="0" pull="up" />
+</hardware>

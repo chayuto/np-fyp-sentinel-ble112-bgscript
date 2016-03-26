@@ -1,0 +1,9 @@
+000f0603f2db60800700003c003c0064000000 #direct connect to BLE112
+801003000005f2db60800700003c0064000100ff #ble_evt_connection_status connection
+
+
+
+
+000504050015000101 #ble_cmd_attclient_attribute_write connection: 0 atthandle: 15 data:01
+
+800b04050014000106120043000201 # ble_evt_attclient_attribute_value connection: 0 atthandle: 14 type: 1 value:120043000201

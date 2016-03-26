@@ -1,0 +1,31 @@
+dim tmp(10)
+dim out(10)
+dim result
+dim channel
+dim tlen
+dim written(6)
+dim data_len
+dim data_data(10)
+
+event system_boot(major ,minor ,patch ,build ,ll_version ,protocol_version ,hw )
+#set to advertising mode
+	call gap_set_mode(gap_general_discoverable,gap_undirected_connectable)
+#set bondable mode
+	call sm_set_bondable_mode(1)
+	
+	data_data(0:1)= $02
+	data_data(1:1)= $D9
+
+	call hardware_i2c_write(94,1,2,data_data(0:2))(written(0))
+	
+end
+
+
+	
+	
+
+
+event connection_disconnected(handle,result)
+#connection disconnected, continue advertising
+    call gap_set_mode(gap_general_discoverable,gap_undirected_connectable)
+end

@@ -1,0 +1,140 @@
+dim cmd
+dim connected
+dim temp_read
+dim result
+dim written(6)
+dim value_len
+dim velue_data
+dim data_len
+dim data_data(10)
+dim temp(4)
+dim fall(4)
+##################################################################
+event system_boot(major ,minor ,patch ,build ,ll_version ,protocol_version ,hw)
+#set to advertising mode
+	call gap_set_mode(gap_general_discoverable,gap_undirected_connectable)
+#set bondable mode
+	call sm_set_bondable_mode(1)
+
+#config i2c&accelerometer	
+	call hardware_i2c_write(166,1,2,"\x2d\x08")(written(0)) #power up sequence 
+	call hardware_i2c_write(166,1,2,"\x31\x0a")(written(1)) #full res
+	call hardware_i2c_write(166,1,2,"\x28\x09")(written(0)) #free fall thresh 
+	call hardware_i2c_write(166,1,2,"\x29\x14")(written(0)) #free fall time
+	
+	call hardware_i2c_write(166,1,2,"\x1d\x41")(written(0))  #tap tresh
+	call hardware_i2c_write(166,1,2,"\x21\x08")(written(0))  #tap DUR
+	call hardware_i2c_write(166,1,2,"\x2A\x07")(written(0))  #tap axis
+
+	call hardware_i2c_write(166,1,2,"\x2F\x40")(written(0))  #int mapping
+	call hardware_i2c_write(166,1,2,"\x2e\x44")(written(0))  #int enable 
+	
+	call hardware_i2c_write(166,0,1,"\x30")(written(2))
+	call hardware_i2c_read(166,1, 1)(result, data_len, fall(2:1)) #clear int
+
+#set connect stat to 0
+	connected = 0
+
+# Configure the P1_0 as output (Port,mask) (1= out,0 = in )
+	call hardware_io_port_config_direction($01, $01)
+
+#Enable HW Interrupt from IO Port 1_5 and 1_4 1_3, 1_2 on Rising edge
+	call hardware_io_port_config_irq(1,$3C,0)
+	
+#start timer at 1second interval, repeating
+	call hardware_set_soft_timer(750,0,0)
+
+#Generating PWM signals
+
+
+	
+end
+
+##################################################################
+event hardware_soft_timer(handle)
+	if connected =1
+		call hardware_adc_read(0,3,2)
+	end if 
+end
+##################################################################
+event hardware_adc_result(input,value)
+
+	call hardware_i2c_write(166,0,1,"\x32")(written(2))
+	data_data(0:1)=$99
+	call hardware_i2c_read(166,1, 6)(result, data_len, data_data(1:6))
+	data_data(7:2)=value
+	data_data(9:1)=$99
+
+	call attributes_write(data_reg,0,10,data_data(0:10))
+
+	
+	
+
+	if temp_read = 1
+			temp(0:1) = $98
+			call hardware_i2c_write(62,0,1,"\x05")(written(2))
+			call hardware_i2c_read(62,1, 2)(result, data_len, temp(1:2))
+			temp(3:1) = $98
+			call attributes_write(data_reg,0,4,temp(0:4))
+			temp_read =0
+			
+	end if
+			
+
+	
+end
+##################################################################
+# Connection event listener
+event connection_status(connection, flags, address, address_type, conn_interval, timeout, latency, bonding)
+	connected = 1		# Device is connected
+end
+##################################################################
+#connection disconnected, continue advertising
+event connection_disconnected(handle,result)
+    call gap_set_mode(gap_general_discoverable,gap_undirected_connectable)
+	connected = 0
+end
+
+##################################################################
+# Attributes value event listener
+# Executed when a remote device writes data to a local attribute
+event attributes_value(connection, reason, handle, offset, value_len, value_data)
+    if handle = ctl_reg then		# Check if data written to Control register
+		
+		#tempo
+		if value_data(0:1) = $01 then									
+		
+			temp_read = 1	
+		
+		end if
+		if value_data(0:1) = $02 then 
+		
+			#port 1_0 to low
+			call hardware_io_port_write(1, $01, $00)
+
+		end if
+		if value_data(0:1) = $03 then
+
+			#port 1_0 to high
+			call hardware_io_port_write(1, $01, $01)
+
+		end if
+		
+		
+    end if
+end
+
+#################################################################
+#HW Interrupts Listener 
+event hardware_io_port_status(delta,port,irq,state)
+
+	fall(0:1) = $96
+	fall(1:1) = irq
+	fall(2:1) = $96
+	call attributes_write(fall_alert,0,3,fall(0:3))
+	
+	
+	call hardware_i2c_write(166,0,1,"\x30")(written(2))
+	call hardware_i2c_read(166,1, 1)(result, data_len, fall(2:1))
+		
+end
